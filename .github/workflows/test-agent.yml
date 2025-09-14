@@ -1,0 +1,108 @@
+name: 🧪 Test Agent
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  test-agent:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'issue_comment' &&
+       contains(github.event.comment.body, 'test')) ||
+      (github.event_name == 'issues') ||
+      (github.event_name == 'workflow_dispatch')
+
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy
+
+    - name: 🤖 Test Agent Response
+      run: |
+        echo "🤖 Test Agent Working!"
+        echo "Event: ${{ github.event_name }}"
+        echo "Repository: ${{ github.repository }}"
+
+        if [ -f "ultimate_optimization_results.json" ]; then
+          echo "✅ Found optimization results"
+          python3 -c "
+import json
+with open('ultimate_optimization_results.json', 'r') as f:
+    data = json.load(f)
+    print(f'Best Performance: {data[\"best_config\"][\"avg_daily_points\"]:.2f} pts/day')
+"
+        else
+          echo "ℹ️ No optimization results found"
+        fi
+
+    - name: 📝 Post Test Results
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const eventName = '${{ github.event_name }}';
+          const timestamp = new Date().toISOString();
+
+          let issueNumber;
+          if (eventName === 'issue_comment') {
+            issueNumber = ${{ github.event.issue.number || 'null' }};
+          } else if (eventName === 'issues') {
+            issueNumber = ${{ github.event.issue.number || 'null' }};
+          } else {
+            // For workflow_dispatch, find or create a test issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'test-agent',
+              state: 'open'
+            });
+
+            if (issues.length === 0) {
+              const { data: newIssue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🧪 Agent Test Issue',
+                body: 'Test issue for agent functionality',
+                labels: ['test-agent']
+              });
+              issueNumber = newIssue.number;
+            } else {
+              issueNumber = issues[0].number;
+            }
+          }
+
+          if (issueNumber) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `🤖 **Test Agent Response**
+
+**Status**: ✅ Working
+**Event**: ${eventName}
+**Timestamp**: ${timestamp}
+**Run ID**: ${{ github.run_number }}
+
+The GitHub Actions agent system is functional and responding to events.
+
+---
+*🧪 Test completed successfully*`
+            });
+          }

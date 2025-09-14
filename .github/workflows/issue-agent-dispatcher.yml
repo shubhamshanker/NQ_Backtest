@@ -102,7 +102,6 @@ The cloud-based optimization agent is now working on your request. Results will 
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        cache: 'pip'
 
     - name: 📦 Install Dependencies
       run: |
