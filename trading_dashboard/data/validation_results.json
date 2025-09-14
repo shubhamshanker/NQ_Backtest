@@ -1,0 +1,83 @@
+{
+  "session_timing": {
+    "total_trades": 4996,
+    "valid_entries": 4996,
+    "valid_exits": 4996,
+    "invalid_entries": [],
+    "invalid_exits": [],
+    "session_compliance": true
+  },
+  "orb_patterns": {
+    "morning_trades": 4028,
+    "afternoon_trades": 256,
+    "orb_prime_time": 3960,
+    "average_entry_time": 10.121265172735761,
+    "morning_bias_percentage": 94.02427637721755,
+    "orb_strategies": [
+      "Champion",
+      "Balanced"
+    ]
+  },
+  "calculations": {
+    "points_calculation_errors": 598,
+    "pnl_calculation_errors": 0,
+    "capture_ratio_errors": 18,
+    "commission_errors": 0,
+    "total_validated": 4996
+  },
+  "data_integrity": {
+    "missing_values": {},
+    "duplicate_trades": 0,
+    "invalid_prices": 9992,
+    "invalid_dates": 0,
+    "weekend_trades": 0
+  },
+  "performance_metrics": {
+    "Champion": {
+      "total_trades": 2145,
+      "winning_trades": 885,
+      "losing_trades": 1260,
+      "win_rate": 41.25874125874126,
+      "total_points": 12071.7,
+      "average_points_per_trade": 5.627832167832168,
+      "total_pnl": 241432.25000000006,
+      "average_win": 44.54658757062146,
+      "average_loss": -21.707960317460316,
+      "points_per_day": 8.388950660180681
+    },
+    "Stable": {
+      "total_trades": 712,
+      "winning_trades": 308,
+      "losing_trades": 404,
+      "win_rate": 43.258426966292134,
+      "total_points": 2473.7999999999993,
+      "average_points_per_trade": 3.47443820224719,
+      "total_pnl": 49480.520000000004,
+      "average_win": 88.63224025974026,
+      "average_loss": -61.447846534653465,
+      "points_per_day": 3.7941717791411045
+    },
+    "Balanced": {
+      "total_trades": 2139,
+      "winning_trades": 784,
+      "losing_trades": 1355,
+      "win_rate": 36.65264142122487,
+      "total_points": 11284.630000000001,
+      "average_points_per_trade": 5.275656848994858,
+      "total_pnl": 225690.89999999997,
+      "average_win": 61.973749999999995,
+      "average_loss": -27.52973431734317,
+      "points_per_day": 7.880328212290504
+    }
+  },
+  "timing_distribution": {
+    "9": 2834,
+    "10": 1140,
+    "11": 412,
+    "12": 236,
+    "13": 190,
+    "14": 131,
+    "15": 53,
+    "16": 0
+  }
+}
