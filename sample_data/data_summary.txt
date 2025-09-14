@@ -1,0 +1,32 @@
+NQ Futures Sample Data Summary
+========================================
+
+REAL MARKET DATA EXTRACTED FROM HISTORICAL FILES
+(This is actual trading data, not synthetic/generated)
+
+M1 Data:
+  Rows: 86,393
+  Period: 2024-01-01 17:00:00 to 2024-03-28 15:59:00
+  Price Range: $17338.80 - $19592.14
+  Volume Range: 1 - 15,339
+
+M3 Data:
+  Rows: 28,806
+  Period: 2024-01-01 17:00:00 to 2024-03-28 15:57:00
+  Price Range: $17338.80 - $19592.14
+  Volume Range: 6 - 25,471
+
+M5 Data:
+  Rows: 17,286
+  Period: 2024-01-01 17:00:00 to 2024-03-28 15:55:00
+  Price Range: $17338.80 - $19592.14
+  Volume Range: 11 - 35,361
+
+M15 Data:
+  Rows: 5,763
+  Period: 2024-01-01 17:00:00 to 2024-03-28 15:45:00
+  Price Range: $17338.80 - $19592.14
+  Volume Range: 70 - 73,220
+
+Total Data Points: 138,248
+Extraction Date: 2025-09-14 20:16:43
