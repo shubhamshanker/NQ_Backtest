@@ -233,7 +233,7 @@ def run_advanced_filtered_backtest():
     print("📊 Monthly performance tracking for consistency")
 
     # Load real NQ data
-    data_file = '/Users/shubhamshanker/bt_/data/NQ_M1_standard.csv'
+    data_file = get_data_path("1min")
     print(f"📊 Loading real NQ data from: {data_file}")
 
     try:

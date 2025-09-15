@@ -14,7 +14,7 @@ Example Usage:
     from backtesting.main import run_orb_backtest
 
     results = run_orb_backtest(
-        data_path="nq_data_15min.csv",
+        data_path=get_data_path("5min"),
         initial_capital=100000,
         start_date="2020-01-01",
         end_date="2023-12-31"

@@ -176,7 +176,7 @@ def run_multi_strategy_system():
     print("📈 Dynamic position sizing and portfolio management")
 
     # Load real data
-    data_file = '/Users/shubhamshanker/bt_/data/NQ_M1_standard.csv'
+    data_file = get_data_path("1min")
     print(f"\n📊 Loading real NQ data from: {data_file}")
 
     try:

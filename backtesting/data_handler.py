@@ -9,39 +9,113 @@ import pandas as pd
 import numpy as np
 from typing import Iterator, Dict, Any, Optional, TYPE_CHECKING
 from pathlib import Path
+import os
 
 if TYPE_CHECKING:
     from pandas import DataFrame
 import warnings
 warnings.filterwarnings('ignore')
 
+# Try to import Parquet data handler
+try:
+    from .parquet_data_handler import ParquetDataHandler
+    PARQUET_AVAILABLE = True
+except ImportError:
+    PARQUET_AVAILABLE = False
+    ParquetDataHandler = None
+
 class DataHandler:
     """
     Handles data loading, timeframe conversion, and event-driven data streaming.
     Provides one bar at a time for the main backtesting loop.
+
+    Supports both CSV and Parquet data sources:
+    - CSV: Legacy format with timezone conversion
+    - Parquet: High-performance format with DuckDB queries
     """
 
     def __init__(self, data_path: str, timeframe: str = "15min",
-                 start_date: Optional[str] = None, end_date: Optional[str] = None):
+                 start_date: Optional[str] = None, end_date: Optional[str] = None,
+                 use_parquet: Optional[bool] = None, symbol: str = "NQ"):
         """
         Initialize DataHandler with data source and parameters.
 
         Args:
-            data_path: Path to data file (CSV or Parquet)
+            data_path: Path to data file (CSV or Parquet) or Parquet root directory
             timeframe: Target timeframe (1min, 3min, 5min, 15min, etc.)
             start_date: Start date filter (YYYY-MM-DD)
             end_date: End date filter (YYYY-MM-DD)
+            use_parquet: Force Parquet usage (auto-detect if None)
+            symbol: Trading symbol for Parquet data
         """
         self.data_path = Path(data_path)
         self.timeframe = timeframe
         self.start_date = start_date
         self.end_date = end_date
+        self.symbol = symbol
         self.data: Optional["DataFrame"] = None
         self.current_index = 0
         self.total_bars = 0
 
+        # Determine data source type
+        self.use_parquet = self._determine_data_source(use_parquet)
+        self._parquet_handler: Optional[ParquetDataHandler] = None
+
+    def _determine_data_source(self, use_parquet: Optional[bool]) -> bool:
+        """Determine whether to use Parquet or CSV data source."""
+        if use_parquet is not None:
+            return use_parquet and PARQUET_AVAILABLE
+
+        # Auto-detect based on path and environment
+        parquet_env = os.getenv('USE_PARQUET_DATA', '').lower() in ('true', '1', 'yes')
+
+        # Check if path points to Parquet data
+        is_parquet_path = (
+            self.data_path.suffix.lower() == '.parquet' or
+            (self.data_path / 'nq').exists() or  # Parquet directory structure
+            'parquet' in str(self.data_path).lower()
+        )
+
+        return PARQUET_AVAILABLE and (parquet_env or is_parquet_path)
+
     def load_data(self) -> None:
         """Load and prepare data from file with timezone handling."""
+        if self.use_parquet:
+            self._load_parquet_data()
+        else:
+            self._load_csv_data()
+
+    def _load_parquet_data(self) -> None:
+        """Load data using Parquet data handler."""
+        if not PARQUET_AVAILABLE:
+            raise ImportError("Parquet support not available. Install duckdb and pyarrow.")
+
+        try:
+            # Initialize Parquet handler
+            self._parquet_handler = ParquetDataHandler(str(self.data_path))
+
+            # Load data
+            df = self._parquet_handler.load_data(
+                symbol=self.symbol,
+                timeframe=self.timeframe,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                session_filter=True
+            )
+
+            if len(df) == 0:
+                raise ValueError(f"No data found for {self.symbol} {self.timeframe}")
+
+            print(f"✅ Loaded {len(df):,} bars from Parquet ({self.symbol} {self.timeframe})")
+
+        except Exception as e:
+            raise FileNotFoundError(f"Failed to load Parquet data: {e}")
+
+        # Continue with common processing
+        self._process_loaded_data(df)
+
+    def _load_csv_data(self) -> None:
+        """Load data using traditional CSV method."""
         try:
             # Attempt to load Parquet first (faster)
             if self.data_path.suffix.lower() == '.parquet':
@@ -55,7 +129,7 @@ class DataHandler:
         except Exception as e:
             raise FileNotFoundError(f"Failed to load data from {self.data_path}: {e}")
 
-        # Handle timezone conversion (Chicago -> NY)
+        # Handle timezone conversion (Chicago -> NY) for CSV data
         if hasattr(df.index, 'tz'):
             if df.index.tz is None:
                 df.index = df.index.tz_localize("America/Chicago", ambiguous='infer', nonexistent='shift_forward')
@@ -78,14 +152,23 @@ class DataHandler:
         if self.end_date:
             df = df[df.index <= self.end_date]
 
+        # Continue with common processing
+        self._process_loaded_data(df)
+
+    def _process_loaded_data(self, df: "DataFrame") -> None:
+        """Common data processing for both CSV and Parquet sources."""
         # Ensure required columns exist
         required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
         missing_cols = [col for col in required_cols if col not in df.columns]
         if missing_cols:
             raise ValueError(f"Missing required columns: {missing_cols}")
 
-        # Convert to target timeframe if needed
-        df = self._convert_timeframe(df, self.timeframe)
+        # Convert to target timeframe if needed (for CSV data)
+        if not self.use_parquet:
+            df = self._convert_timeframe(df, self.timeframe)
+        elif self._parquet_handler and self.timeframe != '1min':
+            # For Parquet, resample if needed
+            df = self._parquet_handler.resample_data(df, self.timeframe)
 
         # Add technical indicators commonly needed
         df = self._add_basic_indicators(df)
@@ -240,3 +323,24 @@ class DataHandler:
         if self.total_bars == 0:
             return 0.0
         return (self.current_index / self.total_bars) * 100
+
+    def get_data_source_info(self) -> Dict[str, Any]:
+        """Get information about the current data source."""
+        return {
+            'source_type': 'Parquet' if self.use_parquet else 'CSV',
+            'data_path': str(self.data_path),
+            'symbol': self.symbol,
+            'timeframe': self.timeframe,
+            'parquet_available': PARQUET_AVAILABLE,
+            'total_bars': self.total_bars,
+            'date_range': {
+                'start': self.data.index[0].date() if self.data is not None and len(self.data) > 0 else None,
+                'end': self.data.index[-1].date() if self.data is not None and len(self.data) > 0 else None
+            }
+        }
+
+    def close(self) -> None:
+        """Clean up resources."""
+        if self._parquet_handler:
+            self._parquet_handler.close()
+            self._parquet_handler = None

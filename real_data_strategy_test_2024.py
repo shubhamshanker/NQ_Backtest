@@ -295,7 +295,7 @@ def run_real_data_strategy_tests():
     print("📈 Full performance analysis with real market conditions")
 
     # Load REAL NQ data
-    data_file = '/Users/shubhamshanker/bt_/data/NQ_M1_standard.csv'
+    data_file = get_data_path("1min")
     df = load_real_nq_data(data_file, 2024)
 
     if df.empty:

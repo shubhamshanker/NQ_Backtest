@@ -27,10 +27,10 @@ class NQSampleDataExtractor:
     def __init__(self, data_dir: str = "data"):
         self.data_dir = data_dir
         self.source_files = {
-            'M1': 'NQ_M1_standard.csv',
-            'M3': 'NQ_M3.csv',
-            'M5': 'NQ_M5.csv',
-            'M15': 'NQ_M15.csv'
+            'M1': get_data_path("1min"),
+            'M3': get_data_path("3min"),
+            'M5': get_data_path("5min"),
+            'M15': get_data_path("15min")
         }
 
     def extract_date_range(self, start_date: str = "2024-01-01",
@@ -184,10 +184,10 @@ class NQSampleDataExtractor:
         os.makedirs(output_dir, exist_ok=True)
 
         file_mapping = {
-            'M1': 'NQ_M1_standard_sample.csv',
-            'M3': 'NQ_M3_sample.csv',
-            'M5': 'NQ_M5_sample.csv',
-            'M15': 'NQ_M15_sample.csv'
+            'M1': get_data_path("1min"),
+            'M3': get_data_path("3min"),
+            'M5': get_data_path("5min"),
+            'M15': get_data_path("1min")
         }
 
         print(f"\n💾 Saving sample data to '{output_dir}/' directory")
@@ -272,7 +272,7 @@ python real_data_strategy_test_2024.py
 import pandas as pd
 
 # Load sample data
-df = pd.read_csv('sample_data/NQ_M1_standard_sample.csv')
+df = pd.read_csv(get_data_path("1min"))
 
 # Use with existing strategies
 from backtesting.ultimate_orb_strategy import UltimateORBStrategy

@@ -375,7 +375,7 @@ class ParameterOptimizer:
 
 def run_parameter_optimization():
     """Main optimization runner"""
-    data_path = "/Users/shubhamshanker/bt_/data/NQ_M1_standard.csv"
+    data_path = get_data_path("1min")
 
     optimizer = ParameterOptimizer(data_path)
     results = optimizer.optimize_parameters()
