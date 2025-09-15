@@ -42,7 +42,7 @@ class DataConfig:
                 }
             },
             "preferences": {
-                "default_source": "auto",  # auto, csv, parquet
+                "default_source": "parquet",  # Force Parquet for performance
                 "default_symbol": "NQ",
                 "default_timeframe": "1min",
                 "session_filter": True,

@@ -185,6 +185,9 @@ class DataMigrationEngine:
         )
         df = df[session_mask]
 
+        # Keep the data in NY timezone for Parquet storage
+        logger.info(f"Data now in NY timezone: {df.index.tz}")
+
         logger.info(f"✅ Timezone conversion complete: {original_size} → {len(df)} rows (filtered to NY session)")
         return df
 

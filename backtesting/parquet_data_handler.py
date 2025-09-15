@@ -51,15 +51,13 @@ class ParquetDataHandler:
     def _configure_duckdb(self):
         """Configure DuckDB for optimal performance."""
         try:
-            # Enable parallel processing
-            self.conn.execute("SET threads TO -1")
+            # Set timezone to NY for proper datetime handling
+            self.conn.execute("SET TimeZone='America/New_York'")
+            # Set threads to 1 to avoid the error
+            self.conn.execute("SET threads TO 1")
             # Optimize for analytical workloads
-            self.conn.execute("SET memory_limit='2GB'")
-            self.conn.execute("SET max_memory='4GB'")
-            # Enable query optimization
-            self.conn.execute("SET enable_optimizer=true")
-            self.conn.execute("SET force_parallelism=true")
-            logger.info("✅ DuckDB configured for optimal performance")
+            self.conn.execute("SET memory_limit='1GB'")
+            logger.info("✅ DuckDB configured for optimal performance (NY timezone)")
         except Exception as e:
             logger.warning(f"DuckDB configuration warning: {e}")
 
@@ -124,19 +122,23 @@ class ParquetDataHandler:
         # Add date filters
         if start_date:
             if isinstance(start_date, str):
-                start_date = pd.to_datetime(start_date).date()
-            query_parts.append(f"AND datetime >= '{start_date}'")
+                start_date_str = start_date
+            else:
+                start_date_str = str(start_date)
+            query_parts.append(f"AND datetime >= '{start_date_str}'")
 
         if end_date:
             if isinstance(end_date, str):
-                end_date = pd.to_datetime(end_date).date()
-            query_parts.append(f"AND datetime <= '{end_date} 23:59:59'")
+                end_date_str = end_date
+            else:
+                end_date_str = str(end_date)
+            query_parts.append(f"AND datetime <= '{end_date_str} 23:59:59'")
 
-        # Add session filter
+        # Add session filter - data is already in NY time
         if session_filter:
             query_parts.extend([
-                "AND EXTRACT(hour FROM datetime) * 60 + EXTRACT(minute FROM datetime) >= 570",  # 9:30
-                "AND EXTRACT(hour FROM datetime) * 60 + EXTRACT(minute FROM datetime) <= 960",   # 16:00
+                "AND EXTRACT(hour FROM datetime) * 60 + EXTRACT(minute FROM datetime) >= 570",  # 9:30 NY
+                "AND EXTRACT(hour FROM datetime) * 60 + EXTRACT(minute FROM datetime) <= 960",   # 16:00 NY
                 "AND EXTRACT(dow FROM datetime) BETWEEN 1 AND 5"  # Monday=1, Friday=5
             ])
 
@@ -155,9 +157,11 @@ class ParquetDataHandler:
             result['datetime'] = pd.to_datetime(result['datetime'])
             result = result.set_index('datetime')
 
-            # Add timezone info if not present
+            # Convert to NY timezone
             if result.index.tz is None:
                 result.index = result.index.tz_localize('America/New_York')
+            else:
+                result.index = result.index.tz_convert('America/New_York')
 
             # Standardize column names
             result.columns = [col.title() for col in result.columns]

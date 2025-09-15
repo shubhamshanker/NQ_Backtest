@@ -21,6 +21,7 @@ warnings.filterwarnings('ignore')
 sys.path.append('/Users/shubhamshanker/bt_/backtesting')
 from ultimate_orb_strategy import UltimateORBStrategy
 from portfolio import Portfolio
+from config.data_config import get_data_path
 
 class OptimizedORBStrategy(UltimateORBStrategy):
     """Optimized ORB with balanced filters for consistent performance."""
@@ -168,20 +169,42 @@ def calculate_market_context(df: pd.DataFrame, current_idx: int) -> Dict[str, An
 
 def run_multi_strategy_system():
     """Run the complete multi-strategy system."""
-    print("🚀 OPTIMIZED MULTI-STRATEGY SYSTEM")
+    print("🚀 OPTIMIZED MULTI-STRATEGY SYSTEM WITH PARQUET DATA")
     print("=" * 80)
     print("🎯 TARGET: Consistent 30+ points per day")
     print("📊 Approach: Multiple complementary strategies")
     print("⚖️  Balanced filters for steady trade flow")
     print("📈 Dynamic position sizing and portfolio management")
+    print("💾 Data Source: High-Performance Parquet + DuckDB")
 
-    # Load real data
-    data_file = get_data_path("1min")
-    print(f"\n📊 Loading real NQ data from: {data_file}")
+    # Load real data using new Parquet system
+    print(f"\n📊 Loading real NQ data with Parquet + DuckDB system...")
 
     try:
-        df = pd.read_csv(data_file)
-        df['timestamp'] = pd.to_datetime(df['Datetime'])
+        # Force Parquet usage for maximum performance
+        import os
+        os.environ['USE_PARQUET_DATA'] = 'true'
+
+        from backtesting.data_handler import DataHandler
+
+        handler = DataHandler(
+            data_path=get_data_path("1min"),
+            timeframe="1min",
+            start_date="2024-01-01",
+            end_date="2024-12-31",
+            use_parquet=True,  # Force Parquet
+            symbol="NQ"
+        )
+
+        print(f"📂 Loading data with enhanced DataHandler...")
+        handler.load_data()
+
+        df = handler.data.copy()
+        print(f"✅ Data source: {handler.get_data_source_info()['source_type']}")
+
+        # Standardize column names for strategy compatibility
+        df = df.reset_index()
+        df['timestamp'] = df['datetime'] if 'datetime' in df.columns else df.index
         df['open'] = df['Open']
         df['high'] = df['High']
         df['low'] = df['Low']

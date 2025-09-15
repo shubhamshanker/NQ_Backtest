@@ -22,17 +22,21 @@ Example Usage:
 """
 
 from .data_handler import DataHandler
+from .parquet_data_handler import ParquetDataHandler
 from .strategy import Strategy, ORBStrategy
 from .portfolio import Portfolio, Position, Trade
 from .performance import PerformanceCalculator
 from .main import BacktestEngine, run_orb_backtest
+from .ultimate_orb_strategy import UltimateORBStrategy
 
 __version__ = "1.0.0"
 __author__ = "Quantitative Trading System"
 
 __all__ = [
     'DataHandler',
+    'ParquetDataHandler',
     'Strategy', 'ORBStrategy',
+    'UltimateORBStrategy',
     'Portfolio', 'Position', 'Trade',
     'PerformanceCalculator',
     'BacktestEngine', 'run_orb_backtest'
