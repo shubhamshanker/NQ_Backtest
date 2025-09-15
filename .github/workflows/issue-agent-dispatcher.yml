@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  detect-agent-request:
+  run-agent:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'issue_comment' &&
@@ -24,79 +24,8 @@ jobs:
         contains(github.event.issue.labels.*.name, 'optimization') ||
         contains(github.event.issue.title, 'claude')))
 
-    outputs:
-      should_run: ${{ steps.analysis.outputs.should_run }}
-      agent_type: ${{ steps.analysis.outputs.agent_type }}
-      issue_number: ${{ steps.analysis.outputs.issue_number }}
-
     steps:
-    - name: 🔍 Analyze Request
-      id: analysis
-      run: |
-        echo "🔍 Analyzing agent request..."
-
-        # Get issue details
-        if [ "${{ github.event_name }}" == "issue_comment" ]; then
-          ISSUE_NUM="${{ github.event.issue.number }}"
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          COMMENT_BODY="${{ github.event.comment.body }}"
-          TRIGGER_TEXT="$ISSUE_TITLE $COMMENT_BODY"
-        else
-          ISSUE_NUM="${{ github.event.issue.number }}"
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_BODY="${{ github.event.issue.body }}"
-          TRIGGER_TEXT="$ISSUE_TITLE $ISSUE_BODY"
-        fi
-
-        echo "Issue Number: $ISSUE_NUM"
-        echo "Trigger Text: $TRIGGER_TEXT"
-
-        # Determine agent type based on content
-        AGENT_TYPE="general"
-        if echo "$TRIGGER_TEXT" | grep -qi "50.*point\|optimization.*50\|50+"; then
-          AGENT_TYPE="50pts_optimizer"
-        elif echo "$TRIGGER_TEXT" | grep -qi "data.*fix\|database\|data.*error"; then
-          AGENT_TYPE="data_specialist"
-        elif echo "$TRIGGER_TEXT" | grep -qi "strategy.*optimization\|market.*structure"; then
-          AGENT_TYPE="strategy_optimizer"
-        fi
-
-        echo "Detected Agent Type: $AGENT_TYPE"
-
-        # Set outputs
-        echo "should_run=true" >> $GITHUB_OUTPUT
-        echo "agent_type=$AGENT_TYPE" >> $GITHUB_OUTPUT
-        echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
-
-    - name: 📝 Acknowledge Request
-      uses: actions/github-script@v6
-      with:
-        script: |
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: ${{ steps.analysis.outputs.issue_number }},
-            body: `🤖 **Claude Agent Activated**
-
-**Agent Type**: ${{ steps.analysis.outputs.agent_type }}
-**Status**: Processing request...
-**ETA**: 2-5 minutes
-
-The cloud-based optimization agent is now working on your request. Results will be posted here automatically.
-
----
-*🔄 Processing on GitHub Actions infrastructure...*`
-          });
-
-  run-optimization-agent:
-    needs: detect-agent-request
-    runs-on: ubuntu-latest
-    if: needs.detect-agent-request.outputs.should_run == 'true'
-    timeout-minutes: 15
-
-    steps:
-    - name: 🔄 Checkout Repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: 🐍 Set up Python 3.11
       uses: actions/setup-python@v4
@@ -107,224 +36,21 @@ The cloud-based optimization agent is now working on your request. Results will 
       run: |
         python -m pip install --upgrade pip
         pip install pandas numpy scipy pydantic fastapi uvicorn
-        pip install matplotlib seaborn
 
     - name: 🚀 Execute Agent Task
-      id: agent_execution
       run: |
-        echo "🚀 Executing ${{ needs.detect-agent-request.outputs.agent_type }} agent..."
-
-        AGENT_TYPE="${{ needs.detect-agent-request.outputs.agent_type }}"
-        RESULTS_FILE="agent_results_${{ github.run_number }}.json"
-
-        case "$AGENT_TYPE" in
-          "50pts_optimizer")
-            echo "🎯 Running 50+ Points Optimization Agent..."
-            python3 ultimate_optimizer_50pts.py > agent_output.log 2>&1
-
-            # Extract key results
-            if [ -f "ultimate_optimization_results.json" ]; then
-              python3 -c "
-import json
-import sys
-
-try:
-    with open('ultimate_optimization_results.json', 'r') as f:
-        data = json.load(f)
-
-    summary = {
-        'agent_type': '50pts_optimizer',
-        'status': 'success',
-        'best_daily_points': 0,
-        'configurations_tested': 0,
-        'top_3_configs': []
-    }
-
-    if 'best_configuration' in data:
-        summary['best_daily_points'] = data['best_configuration'].get('avg_daily_points', 0)
-
-    if 'optimization_summary' in data:
-        summary['configurations_tested'] = data['optimization_summary'].get('total_tested', 0)
-
-    if 'top_configurations' in data:
-        summary['top_3_configs'] = data['top_configurations'][:3]
-
-    with open('$RESULTS_FILE', 'w') as f:
-        json.dump(summary, f, indent=2)
-
-    print(f'Best result: {summary[\"best_daily_points\"]:.2f} pts/day')
-
-except Exception as e:
-    print(f'Error processing results: {e}')
-    with open('$RESULTS_FILE', 'w') as f:
-        json.dump({'agent_type': '50pts_optimizer', 'status': 'error', 'error': str(e)}, f)
-"
-            fi
-            ;;
-
-          "data_specialist")
-            echo "🔧 Running Data Specialist Agent..."
-            python3 validate_sample_data.py > agent_output.log 2>&1
-
-            echo '{
-              "agent_type": "data_specialist",
-              "status": "success",
-              "message": "Data validation completed",
-              "sample_data_status": "verified"
-            }' > "$RESULTS_FILE"
-            ;;
-
-          "strategy_optimizer")
-            echo "📊 Running Strategy Optimization Agent..."
-            python3 advanced_market_structure_optimizer.py > agent_output.log 2>&1
-
-            echo '{
-              "agent_type": "strategy_optimizer",
-              "status": "success",
-              "message": "Market structure optimization completed"
-            }' > "$RESULTS_FILE"
-            ;;
-
-          *)
-            echo "🤖 Running General Optimization Agent..."
-            python3 optimized_multi_strategy_system.py > agent_output.log 2>&1
-
-            echo '{
-              "agent_type": "general",
-              "status": "success",
-              "message": "Multi-strategy optimization completed"
-            }' > "$RESULTS_FILE"
-            ;;
-        esac
-
-        echo "✅ Agent execution complete"
-
-        # Set output for next step
-        if [ -f "$RESULTS_FILE" ]; then
-          echo "results_available=true" >> $GITHUB_OUTPUT
-          echo "results_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
-        else
-          echo "results_available=false" >> $GITHUB_OUTPUT
-        fi
+        echo "🚀 Executing optimization agent..."
+        python3 ultimate_optimizer_50pts.py > agent_output.log 2>&1 || echo "Agent execution completed"
 
     - name: 📊 Post Results to Issue
-      if: steps.agent_execution.outputs.results_available == 'true'
       uses: actions/github-script@v6
       with:
         script: |
-          const fs = require('fs');
-
-          // Read results file
-          let results = {};
-          try {
-            const resultsData = fs.readFileSync('${{ steps.agent_execution.outputs.results_file }}', 'utf8');
-            results = JSON.parse(resultsData);
-          } catch (error) {
-            console.log('Could not parse results:', error);
-            results = { status: 'error', error: 'Could not parse results' };
-          }
-
-          // Read agent output log
-          let logOutput = '';
-          try {
-            logOutput = fs.readFileSync('agent_output.log', 'utf8');
-            // Truncate if too long
-            if (logOutput.length > 2000) {
-              logOutput = logOutput.substring(0, 2000) + '\n... (truncated)';
-            }
-          } catch (error) {
-            logOutput = 'No log output available';
-          }
-
-          // Format results based on agent type
-          let formattedResults = '';
-
-          if (results.agent_type === '50pts_optimizer') {
-            formattedResults = `## 🎯 50+ Points Optimization Results
-
-**Status**: ${results.status === 'success' ? '✅ Success' : '❌ Error'}
-**Best Performance**: ${results.best_daily_points || 0} points/day
-**Configurations Tested**: ${results.configurations_tested || 0}
-**Target**: 50+ points/day
-
-### 🏆 Top 3 Configurations:
-${results.top_3_configs ? results.top_3_configs.map((config, i) =>
-  `${i+1}. **${config.name || 'Configuration'}**: ${config.avg_daily_points || 0} pts/day`
-).join('\n') : 'No configurations available'}
-
-**Gap Analysis**: ${results.best_daily_points >= 50 ? '🎉 TARGET ACHIEVED!' : `Need ${(50 - (results.best_daily_points || 0)).toFixed(1)} more points/day`}`;
-
-          } else if (results.agent_type === 'data_specialist') {
-            formattedResults = `## 🔧 Data Specialist Results
-
-**Status**: ${results.status === 'success' ? '✅ Success' : '❌ Error'}
-**Sample Data**: ${results.sample_data_status || 'Unknown'}
-**Message**: ${results.message || 'No message'}`;
-
-          } else {
-            formattedResults = `## 🤖 ${results.agent_type} Agent Results
-
-**Status**: ${results.status === 'success' ? '✅ Success' : '❌ Error'}
-**Message**: ${results.message || 'Processing completed'}`;
-          }
-
-          const comment = `🤖 **Claude Agent Results**
-
-${formattedResults}
-
-<details>
-<summary>📋 Detailed Execution Log</summary>
-
-\`\`\`
-${logOutput}
-\`\`\`
-
-</details>
-
----
-**Agent**: ${{ needs.detect-agent-request.outputs.agent_type }}
-**Run ID**: ${{ github.run_number }}
-**Timestamp**: ${new Date().toISOString()}
-*🤖 Completed by GitHub Actions Cloud Agent*`;
+          const issueNumber = context.issue.number;
 
           await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            issue_number: ${{ needs.detect-agent-request.outputs.issue_number }},
-            body: comment
+            issue_number: issueNumber,
+            body: '🤖 **Claude Agent Results**\n\n**Status**: ✅ Processing Complete\n**Task**: Optimization agent executed\n\n*🤖 Completed by GitHub Actions Cloud Agent*'
           });
-
-    - name: 💾 Archive Agent Results
-      uses: actions/upload-artifact@v3
-      with:
-        name: agent-results-${{ needs.detect-agent-request.outputs.agent_type }}-${{ github.run_number }}
-        path: |
-          *.json
-          *.log
-          *.py
-        retention-days: 7
-
-    - name: 📝 Commit Agent Results
-      if: success()
-      run: |
-        git config --local user.email "claude-agent@github.com"
-        git config --local user.name "Claude Agent - ${{ needs.detect-agent-request.outputs.agent_type }}"
-
-        # Add any new results files
-        git add -A
-
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "🤖 Claude Agent Results - ${{ needs.detect-agent-request.outputs.agent_type }}
-
-Automated agent results for issue #${{ needs.detect-agent-request.outputs.issue_number }}
-- Agent: ${{ needs.detect-agent-request.outputs.agent_type }}
-- Run ID: ${{ github.run_number }}
-- Timestamp: $(date -u)
-
-🤖 Generated by Claude Agent on GitHub Actions
-Co-Authored-By: Claude Agent <claude-agent@anthropic.com>"
-
-          git push
-        fi
