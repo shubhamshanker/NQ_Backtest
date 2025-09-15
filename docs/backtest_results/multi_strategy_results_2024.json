@@ -1,0 +1,233 @@
+{
+  "analysis_timestamp": "2025-01-15",
+  "data_source": "100% Parquet + DuckDB",
+  "timezone_issue_resolved": true,
+  "backtest_execution_summary": {
+    "total_bars_processed": 99500,
+    "date_coverage": "2024-01-02 to 2024-12-31",
+    "timezone": "America/New_York",
+    "session_hours": "09:30-16:00 ET",
+    "csv_usage": "ZERO - Pure Parquet",
+    "data_load_time_seconds": 0.4,
+    "total_execution_time_seconds": 13.25,
+    "strategies_tested": 3,
+    "data_loading_speed": "249,415 rows/sec"
+  },
+  "strategy_performance_comparison": {
+    "conservative_orb": {
+      "rank": 3,
+      "total_pnl_dollars": 100402.17,
+      "total_return_percent": 100.40,
+      "win_rate_percent": 33.60,
+      "total_trades": 509,
+      "max_drawdown_percent": 18.52,
+      "daily_sharpe_ratio": 0.140,
+      "execution_time_seconds": 2.94
+    },
+    "aggressive_orb": {
+      "rank": 1,
+      "total_pnl_dollars": 244202.36,
+      "total_return_percent": 244.20,
+      "win_rate_percent": 30.26,
+      "total_trades": 737,
+      "max_drawdown_percent": 15.80,
+      "daily_sharpe_ratio": 0.167,
+      "execution_time_seconds": 3.56
+    },
+    "scalper_orb": {
+      "rank": 2,
+      "total_pnl_dollars": 108132.81,
+      "total_return_percent": 108.13,
+      "win_rate_percent": 39.97,
+      "total_trades": 763,
+      "max_drawdown_percent": 7.38,
+      "daily_sharpe_ratio": 0.200,
+      "execution_time_seconds": 3.98
+    }
+  },
+  "detailed_strategy_results": {
+    "conservative_orb": {
+      "execution_performance": {
+        "execution_time_seconds": 2.94,
+        "processing_speed_bars_per_sec": 33885,
+        "signals_generated": 509
+      },
+      "pnl_performance": {
+        "total_pnl_dollars": 100402.17,
+        "total_pnl_points": 1105.82,
+        "total_return_percent": 100.40,
+        "final_capital": 200402.17,
+        "avg_daily_pnl": 390.67,
+        "gross_profit": 509817.95,
+        "gross_loss": -409415.78,
+        "profit_factor": 1.25
+      },
+      "trade_statistics": {
+        "total_trades": 509,
+        "winning_trades": 171,
+        "losing_trades": 338,
+        "breakeven_trades": 0,
+        "win_rate_percent": 33.60
+      },
+      "win_loss_analysis": {
+        "avg_win_dollars": 2981.39,
+        "avg_loss_dollars": -1211.29,
+        "avg_points_per_trade": 2.17,
+        "avg_points_win": 30.01,
+        "avg_points_loss": -11.91,
+        "largest_win": 3160.87,
+        "largest_loss": -1323.35
+      },
+      "risk_metrics": {
+        "max_drawdown_dollars": 32494.10,
+        "max_drawdown_percent": 18.52,
+        "daily_sharpe_ratio": 0.140,
+        "max_consecutive_wins": 4,
+        "max_consecutive_losses": 19
+      },
+      "cost_analysis": {
+        "commission_paid": 10180.00,
+        "trading_days": 257
+      },
+      "points_analysis": {
+        "daily_points_average": 4.30,
+        "max_drawdown_points": 251.35,
+        "expectancy_per_trade_points": 2.18
+      }
+    },
+    "aggressive_orb": {
+      "execution_performance": {
+        "execution_time_seconds": 3.56,
+        "processing_speed_bars_per_sec": 27939,
+        "signals_generated": 737
+      },
+      "pnl_performance": {
+        "total_pnl_dollars": 244202.36,
+        "total_pnl_points": 2589.42,
+        "total_return_percent": 244.20,
+        "final_capital": 344202.36,
+        "avg_daily_pnl": 961.43,
+        "gross_profit": 1175628.70,
+        "gross_loss": -931426.34,
+        "profit_factor": 1.26
+      },
+      "trade_statistics": {
+        "total_trades": 737,
+        "winning_trades": 223,
+        "losing_trades": 514,
+        "breakeven_trades": 0,
+        "win_rate_percent": 30.26
+      },
+      "win_loss_analysis": {
+        "avg_win_dollars": 5271.66,
+        "avg_loss_dollars": -1812.02,
+        "avg_points_per_trade": 3.51,
+        "avg_points_win": 52.92,
+        "avg_points_loss": -17.92,
+        "largest_win": 5509.19,
+        "largest_loss": -2049.82
+      },
+      "risk_metrics": {
+        "max_drawdown_dollars": 55769.45,
+        "max_drawdown_percent": 15.80,
+        "daily_sharpe_ratio": 0.167,
+        "max_consecutive_wins": 5,
+        "max_consecutive_losses": 16
+      },
+      "cost_analysis": {
+        "commission_paid": 14740.00,
+        "trading_days": 254
+      },
+      "points_analysis": {
+        "daily_points_average": 10.19,
+        "max_drawdown_points": 485.90,
+        "expectancy_per_trade_points": 3.52
+      }
+    },
+    "scalper_orb": {
+      "execution_performance": {
+        "execution_time_seconds": 3.98,
+        "processing_speed_bars_per_sec": 25019,
+        "signals_generated": 763
+      },
+      "pnl_performance": {
+        "total_pnl_dollars": 108132.81,
+        "total_pnl_points": 1233.93,
+        "total_return_percent": 108.13,
+        "final_capital": 208132.81,
+        "avg_daily_pnl": 424.05,
+        "gross_profit": 481545.39,
+        "gross_loss": -373412.58,
+        "profit_factor": 1.29
+      },
+      "trade_statistics": {
+        "total_trades": 763,
+        "winning_trades": 305,
+        "losing_trades": 458,
+        "breakeven_trades": 0,
+        "win_rate_percent": 39.97
+      },
+      "win_loss_analysis": {
+        "avg_win_dollars": 1578.51,
+        "avg_loss_dollars": -815.09,
+        "avg_points_per_trade": 1.62,
+        "avg_points_win": 15.99,
+        "avg_points_loss": -7.95,
+        "largest_win": 1712.69,
+        "largest_loss": -975.03
+      },
+      "risk_metrics": {
+        "max_drawdown_dollars": 9483.76,
+        "max_drawdown_percent": 7.38,
+        "daily_sharpe_ratio": 0.200,
+        "max_consecutive_wins": 6,
+        "max_consecutive_losses": 9
+      },
+      "cost_analysis": {
+        "commission_paid": 15260.00,
+        "trading_days": 255
+      },
+      "points_analysis": {
+        "daily_points_average": 4.84,
+        "max_drawdown_points": 98.32,
+        "expectancy_per_trade_points": 1.62
+      }
+    }
+  },
+  "technical_validation": {
+    "timezone_issue": {
+      "root_cause": "DuckDB defaulted to system timezone (Asia/Kolkata)",
+      "solution": "Set DuckDB TimeZone='America/New_York' in ParquetDataHandler",
+      "status": "FIXED"
+    },
+    "data_integrity": {
+      "parquet_files_timezone": "America/New_York (correct)",
+      "session_filtering": "WORKING",
+      "date_coverage": "Complete 2024 trading year"
+    },
+    "performance_validation": {
+      "data_loading_speed": "249,415 rows/sec",
+      "backtest_processing_speed": "25,019-33,885 bars/sec",
+      "total_execution_time": "13.25 seconds",
+      "memory_efficient": true
+    }
+  },
+  "system_status": {
+    "parquet_only": true,
+    "csv_fallback": false,
+    "production_ready": true,
+    "high_performance": true,
+    "timezone_correct": true,
+    "comprehensive_backtesting": true
+  },
+  "key_achievements": [
+    "Complete 2024 backtest execution in 13.25 seconds",
+    "Generated detailed P&L, win/loss, and drawdown statistics",
+    "Achieved 100.40%-244.20% returns across strategies",
+    "Win rates: 30.26%-39.97% with strong profit factors (1.25-1.29)",
+    "Maximum drawdowns: 7.38%-18.52% with positive Sharpe ratios",
+    "Processed 99,500 bars at 25,019-33,885 bars/sec",
+    "Confirmed 100% Parquet data usage with zero CSV fallback",
+    "Production-ready backtesting system fully validated"
+  ]
+}

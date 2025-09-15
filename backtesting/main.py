@@ -247,7 +247,7 @@ if __name__ == "__main__":
     Example usage of the backtesting system.
     """
     # Example: Run ORB strategy on NQ data
-    DATA_PATH = "/Users/shubhamshanker/bt_/nq_data_15min.csv"  # Update path as needed
+    DATA_PATH = get_data_path("5min")  # Update path as needed
 
     print("🔬 Running Example ORB Backtest")
     print("=" * 40)
